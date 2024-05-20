@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -28,16 +30,10 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => 'nullable',
-            'quantity' => 'required|integer|min:0',
-            'active' => 'boolean',
-        ]);
-
-        Product::create($request->all());
+        
+        Product::create($request->validated());
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully.');
@@ -56,22 +52,17 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
+        $product = Product::find($id);
         return view('backend.products.edit', compact('product'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => 'nullable',
-            'quantity' => 'required|integer|min:0',
-            'active' => 'boolean',
-        ]);
-
-        $product->update($request->all());
+        $data = $request->validated();
+        $product->update($data);
 
         return redirect()->route('products.index')
             ->with('success', 'Product updated successfully.');
@@ -86,5 +77,20 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    public function ProductChangeStatus($id)
+    {
+        $product = Product::find($id);
+        $product->status =  $product->status == "1" ? "0" : "1";
+        $product->save();
+        return redirect()->route('products.index')->with('success', 'Product Update successfully');
+    }
+
+    public function removeImage($id, $mediaId)
+    {
+        $product = Product::find($id);
+        $status = $product->deleteMedia($mediaId);
+        return redirect()->back()->with('success', 'Image deleted (refresh page)');
     }
 }

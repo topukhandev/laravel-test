@@ -19,3 +19,5 @@ Route::get('/', function () {
 });
 
 Route::resource('products', ProductController::class);
+Route::get('products/status/{id}', [ProductController::class, 'ProductChangeStatus'])->name('product.changeStatus');
+Route::get('/product/image/remove/{id}/{file}', [ProductController::class, 'removeImage'])->name('products.image.remove');
